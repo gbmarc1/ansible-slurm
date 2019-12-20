@@ -1,9 +1,14 @@
 ---
 
-- name: Install Slurm client
+- name: Install Slurm client from Package manager
   package:
     name: "{{ __slurm_packages.client }}"
     state: "{{ 'latest' if slurm_upgrade else 'present' }}"
+  when: slurm_version == ""
+
+- name: Install Slurm Client from tarball url
+  include_tasks: _install_slurm_tarball.yml
+  when: slurm_version != ""
 
 - name: Include config dir creation tasks
   include_tasks: _inc_create_config_dir.yml

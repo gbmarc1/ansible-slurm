@@ -1,5 +1,5 @@
 ---
-
+slurm_version:
 slurm_upgrade: no
 slurm_roles: []
 slurm_partitions: []
