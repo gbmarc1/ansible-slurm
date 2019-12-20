@@ -1,30 +1,30 @@
 - name: Install Slurm Dependencies
   become: yes
-     package:
-        name: "{{ item }}"
-        state: "latest"
-     with_items:
-        - gcc
-        - make
+        package:
+                name: "{{ item }}"
+                state: "latest"
+        with_items:
+                - gcc
+                - make
 
 - name: Downloading Slurm Sources
   get_url:
-     url: "http://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
-     dest: "/tmp/slurm-{{ slurm_version }}.tar.bz2"
+        url: "http://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
+        dest: "/tmp/slurm-{{ slurm_version }}.tar.bz2"
   register: slurm_source
 
 - name: Unpacking Slurm Source
   unarchive:
-     copy: no
-     dest: /tmp/
-     src: "{{ slurm_source.dest }}"
+        copy: no
+        dest: /tmp/
+        src: "{{ slurm_source.dest }}"
   when: slurm_source.changed
   register: slurm_source_unpack
 
 - name: Configuring Slurm Source
   shell: ./configure --prefix=/tmp/slurm-build --sysconfdir={{ slurm_config_dir}}
   args:
-     chdir: "/tmp/slurm-{{ slurm_version }}"
+        chdir: "/tmp/slurm-{{ slurm_version }}"
   when: slurm_source_unpack|changed
   register: slurm_configure
 
@@ -32,5 +32,5 @@
   become: yes
   shell: make && make install
   args:
-          chdir: "/tmp/slurm-{{ slurm_version }}"
+        chdir: "/tmp/slurm-{{ slurm_version }}"
   when: slurm_configure|changed
