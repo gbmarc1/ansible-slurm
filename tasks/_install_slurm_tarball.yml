@@ -1,11 +1,11 @@
 - name: Install Slurm Dependencies
   become: yes
-        package:
-                name: "{{ item }}"
-                state: "latest"
-        with_items:
-                - gcc
-                - make
+  package:
+        name: "{{ item }}"
+        state: "latest"
+  with_items:
+        - gcc
+        - make
 
 - name: Downloading Slurm Sources
   get_url:
