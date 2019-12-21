@@ -22,7 +22,7 @@
   register: slurm_source_unpack
 
 - name: Configuring Slurm Source
-  shell: ./configure --prefix=/tmp/slurm-build --sysconfdir={{ slurm_config_dir}}
+  command: ./configure --prefix=/tmp/slurm-build --sysconfdir={{ slurm_config_dir}}
   args:
         chdir: "/tmp/slurm-{{ slurm_version }}"
   when: slurm_source_unpack|changed
@@ -30,7 +30,7 @@
 
 - name: Compile and Install Slurm
   become: yes
-  shell: make && make install
+  command: make && make install
   args:
         chdir: "/tmp/slurm-{{ slurm_version }}"
   when: slurm_configure|changed
