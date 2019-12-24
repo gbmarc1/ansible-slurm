@@ -4,6 +4,11 @@
   package:
     name: "{{ __slurm_packages.slurmd }}"
     state: "{{ 'latest' if slurm_upgrade else 'present' }}"
+  when: slurm_version == ""
+
+- name: Install Slurm Execution host packages from tarball url
+  include_tasks: _install_slurm_tarball.yml
+  when: slurm_version != ""
 
 - name: Create slurm spool directory
   file:
@@ -38,3 +43,11 @@
     - name: cgroup.conf
       config: slurm_cgroup_config
   when: item.config in vars
+
+- name: Configure Slurm Execution Service
+  systemd:
+    name: slurmd
+    state: stopped 
+    enabled: yes
+    masked: no
+

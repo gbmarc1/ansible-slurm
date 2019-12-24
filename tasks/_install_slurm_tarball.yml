@@ -6,6 +6,88 @@
   with_items:
         - gcc
         - make
+        - build-essential
+        - dpkg
+        - ruby-dev
+        - libssl-dev
+        - libmysqlclient-dev
+        - libpam0g-dev
+
+- name: Install fpm
+  become: yes
+  gem:
+        name: fpm
+        state: latest
+        user_install: no
+################### MUNGE ######################
+
+- name: Downloading Munge Sources
+  get_url:
+        url: "https://github.com/dun/munge/releases/download/munge-{{ munge_version }}/munge-{{ munge_version }}.tar.xz"
+        dest: "/tmp/munge-{{ munge_version }}.tar.xz"
+  register: munge_source
+
+- name: Check if Unpacked munge-{{ munge_version }} folder already exists
+  stat:
+        path: "/tmp/munge-{{ munge_version }}"
+  register: source_munge_unpack_stat
+
+- name: Unpacking Munge Source
+  unarchive:
+        copy: no
+        dest: /tmp/
+        src: "{{ munge_source.dest }}"
+  when: munge_source.changed or source_munge_unpack_stat.stat.exists == False
+  register: munge_source_unpack
+
+- name: Check if Munge {{ munge_version }} is Installed
+  shell: munge -V | awk '{split($1,A,"-"); print A[2]}' 
+  register: check_munge_version
+  changed_when: False
+
+- name: Configuring Munge Source
+  become: yes
+  command: ./configure --sysconfdir=/etc --prefix=/tmp/munge-build --localstatedir=/var
+  args:
+        chdir: "/tmp/munge-{{ munge_version }}"
+  when: munge_source_unpack.changed or ( check_munge_version.stdout  !=  munge_version )
+  register: munge_configure
+  failed_when: (munge_configure.rc not in [0, 1])
+
+- name: Compile and Install Munge
+  become: yes
+  shell: make && make install
+  args:
+        chdir: "/tmp/munge-{{ munge_version }}"
+  when: munge_configure.changed
+  register: munge_make
+  failed_when: (munge_make.rc not in [0, 1])
+
+- name: Check if munge_{{ munge_version }}_amd64.deb already exists
+  stat:
+        path: "/tmp/munge_{{ munge_version }}_amd64.deb"
+  register: munge_debpackage_stat
+
+- name: Build Munge Debian Package
+  command: fpm -s dir -t deb -v {{ munge_version }} -n  munge --prefix=/usr -C /tmp/munge-build .
+  args:
+        chdir: "/tmp" 
+  when: munge_make.changed or munge_debpackage_stat.stat.exists == False 
+  register: munge_deb
+  failed_when: (munge_deb.rc not in [0, 1])
+
+- name: Install Munge Debian package
+  become: yes
+  command: dpkg -i munge_{{ munge_version }}_amd64.deb
+  args:
+        chdir: "/tmp"
+  when: munge_deb.changed
+  register: munge_install
+  failed_when: (munge_install.rc not in [0, 1])
+
+
+
+################### SLURM ######################
 
 - name: Downloading Slurm Sources
   get_url:
@@ -13,24 +95,60 @@
         dest: "/tmp/slurm-{{ slurm_version }}.tar.bz2"
   register: slurm_source
 
+- name: Check if Unpacked slurm-{{ slurm_version }} folder already exists
+  stat:
+        path: "/tmp/slurm-{{ slurm_version }}"
+  register: source_slurm_unpack_stat
+
 - name: Unpacking Slurm Source
   unarchive:
         copy: no
         dest: /tmp/
         src: "{{ slurm_source.dest }}"
-  when: slurm_source.changed
+  when: slurm_source.changed or source_slurm_unpack_stat.stat.exists == False
   register: slurm_source_unpack
 
+- name: Check if Slurm {{ slurm_version }} is Installed
+  shell: sinfo -V | awk '{print $2}'
+  register: check_slurm_version
+  changed_when: False
+
 - name: Configuring Slurm Source
-  command: ./configure --prefix=/tmp/slurm-build --sysconfdir={{ slurm_config_dir}}
+  become: yes
+  command: ./configure --sysconfdir={{ slurm_config_dir}} --prefix=/tmp/slurm-build
   args:
         chdir: "/tmp/slurm-{{ slurm_version }}"
-  when: slurm_source_unpack|changed
+  when: slurm_source_unpack.changed or ( check_slurm_version.stdout  !=  slurm_version )
   register: slurm_configure
+  failed_when: (slurm_configure.rc not in [0, 1])
 
 - name: Compile and Install Slurm
   become: yes
-  command: make && make install
+  shell: make && make contrib && make install
   args:
         chdir: "/tmp/slurm-{{ slurm_version }}"
-  when: slurm_configure|changed
+  when: slurm_configure.changed
+  register: slurm_make
+  failed_when: (slurm_make.rc not in [0, 1])
+
+- name: Check if slurm_{{ slurm_version }}_amd64.deb already exists
+  stat:
+        path: "/tmp/slurm_{{ slurm_version }}_amd64.deb"
+  register: slurm_debpackage_stat
+
+- name: Build Slurm Debian Package
+  command: fpm -s dir -t deb -v {{ slurm_version }} -n  slurm --prefix=/usr -C /tmp/slurm-build .
+  args:
+        chdir: "/tmp" 
+  when: slurm_make.changed or slurm_debpackage_stat.stat.exists == False 
+  register: slurm_deb
+  failed_when: (slurm_deb.rc not in [0, 1])
+
+- name: Install Slurm Debian package
+  become: yes
+  command: dpkg -i slurm_{{ slurm_version }}_amd64.deb
+  args:
+        chdir: "/tmp"
+  when: slurm_deb.changed
+  register: slurm_install
+  failed_when: (slurm_install.rc not in [0, 1])

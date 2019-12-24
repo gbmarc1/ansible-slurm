@@ -4,6 +4,11 @@
   package:
     name: "{{ __slurm_packages.slurmdbd }}"
     state: "{{ 'latest' if slurm_upgrade else 'present' }}"
+  when: slurm_version == ""
+
+- name: Install Slurm DB packages from tarball url
+  include_tasks: _install_slurm_tarball.yml
+  when: slurm_version != ""
 
 - name: Install slurmdbd.conf
   template:
@@ -23,3 +28,10 @@
     mode: 0755
     state: directory
   when: slurm_create_dirs and __slurmdbd_config_merged.LogFile
+
+- name: Configure Slurm DB Service
+  systemd:
+    name: slurmdbd
+    state: stopped
+    enabled: yes
+    masked: no

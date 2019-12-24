@@ -17,6 +17,13 @@
     mode: 0400
   when: slurm_munge_key is defined
 
+- name: Configure Munge Execution Service
+  systemd:
+    name: munge
+    state: stopped
+    enabled: yes
+    masked: no
+
 - name: Ensure Munge is enabled and running
   service:
     name: munge
