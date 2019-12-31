@@ -1,15 +1,5 @@
 ---
 
-- name: Install Slurm DB packages
-  package:
-    name: "{{ __slurm_packages.slurmdbd }}"
-    state: "{{ 'latest' if slurm_upgrade else 'present' }}"
-  when: slurm_version == ""
-
-- name: Install Slurm DB packages from tarball url
-  include_tasks: _install_slurm_tarball.yml
-  when: slurm_version != ""
-
 - name: Install slurmdbd.conf
   template:
     src: generic.conf.j2

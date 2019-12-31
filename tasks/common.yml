@@ -1,14 +1,14 @@
 ---
 
-- name: Install Slurm client from Package manager
-  package:
-    name: "{{ __slurm_packages.client }}"
-    state: "{{ 'latest' if slurm_upgrade else 'present' }}"
-  when: slurm_version == ""
+- name: Check if Slurm {{ slurm_version }} is Installed
+  shell: sinfo -V | awk '{print $2}'
+  register: check_slurm_version
+  changed_when: check_slurm_version.stdout != slurm_version
+  failed_when: slurm_version == ''
 
 - name: Install Slurm Client from tarball url
   include_tasks: _install_slurm_tarball.yml
-  when: slurm_version != ""
+  when: check_slurm_version.changed
 
 - name: Include config dir creation tasks
   include_tasks: _inc_create_config_dir.yml

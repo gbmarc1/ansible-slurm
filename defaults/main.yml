@@ -36,7 +36,7 @@ __slurm_config_default:
   SlurmctldLogFile: "{{ '/var/log/slurm-llnl/slurmctld.log' if __slurm_debian else omit }}"
   SlurmctldPidFile: >-
     {{
-        '/var/run/slurm-llnl/slurmctld.pid' if __slurm_debian else omit
+        '/var/run/slurmctld.pid' if __slurm_debian else omit
     }}
   StateSaveLocation: >-
     {{
@@ -49,7 +49,7 @@ __slurm_config_default:
   SlurmdLogFile: "{{ '/var/log/slurm-llnl/slurmd.log' if __slurm_debian else omit }}"
   SlurmdPidFile: >-
     {{
-        '/var/run/slurm-llnl/slurmd.pid' if __slurm_debian else omit
+        '/var/run/slurmd.pid' if __slurm_debian else omit
     }}
   SlurmdSpoolDir: >-
     {{
@@ -79,7 +79,7 @@ __slurmdbd_config_default:
   SlurmUser: "{{ __slurm_user_name }}"
   PidFile: >-
     {{
-        '/var/run/slurm-llnl/slurmdbd.pid' if __slurm_debian else omit
+        '/var/run/slurmdbd.pid' if __slurm_debian else omit
     }}
   LogFile: "{{ '/var/log/slurm-llnl/slurmdbd.log' if __slurm_debian else omit }}"
 __slurmdbd_config_merged: "{{ __slurmdbd_config_default | combine(slurmdbd_config | default({})) }}"
