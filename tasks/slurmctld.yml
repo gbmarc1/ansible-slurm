@@ -20,10 +20,3 @@
     state: directory
   when: slurm_create_dirs and __slurm_config_merged.SlurmctldLogFile != omit
   
-- name: Configure Slurm Controller Service
-  systemd:
-    name: slurmctld
-    state: stopped
-    enabled: yes
-    masked: no
-

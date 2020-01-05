@@ -19,9 +19,3 @@
     state: directory
   when: slurm_create_dirs and __slurmdbd_config_merged.LogFile
 
-- name: Configure Slurm DB Service
-  systemd:
-    name: slurmdbd
-    state: stopped
-    enabled: yes
-    masked: no

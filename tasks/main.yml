@@ -23,22 +23,25 @@
   systemd:
     name: "{{ slurmdbd_service_name }}"
     enabled: yes
-    state: started
+    state: restarted
     daemon_reload: yes
+    masked: no
   when: "'slurmdbdservers' in group_names or 'dbd' in slurm_roles"
 
 - name: Ensure slurmctld is enabled and running
   systemd:
     name: "{{ slurmctld_service_name }}"
     enabled: yes
-    state: started
+    state: restarted
     daemon_reload: yes
+    masked: no
   when: "'slurmservers' in group_names or 'controller' in slurm_roles"
 
 - name: Ensure slurmd is enabled and running
   systemd:
     name: "{{ slurmd_service_name }}"
     enabled: yes
-    state: started
+    state: restarted
     daemon_reload: yes
+    masked: no
   when: "'slurmexechosts' in group_names or 'exec' in slurm_roles"

@@ -34,10 +34,3 @@
       config: slurm_cgroup_config
   when: item.config in vars
 
-- name: Configure Slurm Execution Service
-  systemd:
-    name: slurmd
-    state: stopped 
-    enabled: yes
-    masked: no
-

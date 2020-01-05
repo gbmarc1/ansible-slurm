@@ -4,7 +4,7 @@
         name: slurm
         state: absent
 
-- name: Making sure slurm is properly uninstalled
+- name: Making sure slurm is uninstalled properly
   shell: command -v sinfo
   register: check_slurm_version
   failed_when: check_slurm_version.stdout != ''
