@@ -24,6 +24,17 @@
   include_tasks: _inc_create_config_dir.yml
   when: slurm_create_dirs
 
+- name: Create slurm cgroup directory
+  file:
+    path: "{{ __slurm_cgroup_config_merged.CgroupReleaseAgentDir }}"
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+  when: slurm_create_dirs and __slurm_cgroup_config_merged.CgroupReleaseAgentDir is defined
+  notify:
+    - reload slurmd
+
 - name: Install extra execution host configs
   template:
     src: generic.conf.j2
@@ -31,6 +42,8 @@
     backup: yes
   with_items:
     - name: cgroup.conf
-      config: slurm_cgroup_config
+      config: __slurm_cgroup_config_merged
   when: item.config in vars
 
+- name: Update Grub
+  include: grub.yml

@@ -83,3 +83,8 @@ __slurmdbd_config_default:
     }}
   LogFile: "{{ '/var/log/slurm-llnl/slurmdbd.log' if __slurm_debian else omit }}"
 __slurmdbd_config_merged: "{{ __slurmdbd_config_default | combine(slurmdbd_config | default({})) }}"
+
+
+__slurm_cgroup_config_default:
+  CgroupReleaseAgentDir: '{{slurm_config_dir}}/cgroup'
+__slurm_cgroup_config_merged: "{{ __slurm_cgroup_config_default | combine(slurm_cgroup_config | default({})) }}"
